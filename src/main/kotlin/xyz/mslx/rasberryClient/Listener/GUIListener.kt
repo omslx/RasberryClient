@@ -1,0 +1,98 @@
+package xyz.mslx.rasberryClient.Listener
+
+
+import net.kyori.adventure.text.minimessage.MiniMessage
+import org.bukkit.Material
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.inventory.InventoryClickEvent
+import xyz.mslx.rasberryClient.RasberryClient
+import xyz.mslx.rasberryClient.model.SMPData
+import xyz.mslx.rasberryClient.model.SMPStatus
+import java.util.UUID
+
+class GUIListener(private val plugin: RasberryClient) : Listener {
+    private val mm = MiniMessage.miniMessage()
+D
+    @EventHandler
+    fun onInventoryClick(event: InventoryClickEvent) {
+        val player = event.whoClicked as? Player ?: return
+        val title = event.view.title()
+
+        // تشخیص کلیک روی منوهای اختصاصی با استفاده از مقایسه Plain Text عنوان کامپوننت
+        val titleString = MiniMessage.miniMessage().serialize(title)
+
+        if (titleString.contains("SMP Network Portal") || titleString.contains("Customize Your Server") || titleString.contains("Are you absolutely sure")) {
+            event.isCancelled = true
+            val clickedItem = event.currentItem ?: return
+            if (clickedItem.type == Material.AIR) return
+
+            // منطق منوی اصلی
+            if (titleString.contains("SMP Network Portal")) {
+                if (clickedItem.type == Material.GRASS_BLOCK) {
+                    plugin.guiManager.openCreationMenu(player)
+                } else if (clickedItem.type == Material.EMERALD_BLOCK || clickedItem.type == Material.REDSTONE_BLOCK || clickedItem.type == Material.GOLD_BLOCK) {
+                    val smpData = plugin.smpManager.getCachedData(player.uniqueId) ?: return
+                    if (event.click.isLeftClick) {
+                        if (smpData.status == SMPStatus.ONLINE) {
+                            player.sendMessage(mm.deserialize("<green>Connecting you to your SMP instance...</green>"))
+                            // BungeeCord / Velocity plugin channel implementation here to connect
+                        } else {
+                            player.sendMessage(mm.deserialize("<red>Your server is currently offline or starting!</red>"))
+                        }
+                    } else if (event.click.isRightClick) {
+                        // باز کردن تنظیمات
+                        player.sendMessage(mm.deserialize("<yellow>Opening Server Settings...</yellow>"))
+                    }
+                } else if (clickedItem.type == Material.BARRIER) {
+                    plugin.guiManager.openConfirmationMenu(player)
+                }
+            }
+
+            // منطق منوی تایید حذف
+            else if (titleString.contains("Are you absolutely sure")) {
+                if (clickedItem.type == Material.GREEN_WOOL) {
+                    plugin.smpManager.deleteRequest(player.uniqueId.toString())
+                    player.sendMessage(mm.deserialize("<red>Your SMP server deletion request has been sent.</red>"))
+                    player.closeInventory()
+                } else if (clickedItem.type == Material.RED_WOOL) {
+                    plugin.guiManager.openMainMenu(player)
+                }
+            }
+
+            // منطق منوی ساخت سرور با چک کردن Vault Economy
+            else if (titleString.contains("Customize Your Server")) {
+                if (clickedItem.type == Material.SLIME_BALL) {
+                    val econ = plugin.economy
+                    if (econ == null) {
+                        player.sendMessage(mm.deserialize("<red>Economy system not found. Contact administration.</red>"))
+                        return
+                    }
+
+                    val cost = 5000.0
+                    if (econ.has(player, cost)) {
+                        econ.withdrawPlayer(player, cost)
+                        player.sendMessage(mm.deserialize("<green>5,000 coins deducted successfully!</green>"))
+
+                        // ساخت مدل داده با مشخصات دیفالت یا مقادیر استخراج شده از متا
+                        val newSmp = SMPData(
+                            ownerUuid = player.uniqueId.toString(),
+                            smpId = UUID.randomUUID().toString(),
+                            smpName = "${player.name}'s SMP",
+                            serverVersion = "1.21",
+                            status = SMPStatus.STARTING
+                        )
+
+                        plugin.smpManager.createRequest(newSmp)
+                        player.sendMessage(mm.deserialize("<gold>Deploying your new Multi-Version SMP... Please wait.</gold>"))
+                        player.closeInventory()
+                    } else {
+                        player.sendMessage(mm.deserialize("<red>Insufficient funds! You need 5,000 coins to create an SMP server.</red>"))
+                        player.closeInventory()
+                    }
+                }
+            }
+        }
+    }
+}
