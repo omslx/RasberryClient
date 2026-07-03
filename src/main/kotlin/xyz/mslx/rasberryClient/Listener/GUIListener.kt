@@ -14,13 +14,11 @@ import java.util.UUID
 
 class GUIListener(private val plugin: RasberryClient) : Listener {
     private val mm = MiniMessage.miniMessage()
-D
     @EventHandler
     fun onInventoryClick(event: InventoryClickEvent) {
         val player = event.whoClicked as? Player ?: return
         val title = event.view.title()
 
-        // تشخیص کلیک روی منوهای اختصاصی با استفاده از مقایسه Plain Text عنوان کامپوننت
         val titleString = MiniMessage.miniMessage().serialize(title)
 
         if (titleString.contains("SMP Network Portal") || titleString.contains("Customize Your Server") || titleString.contains("Are you absolutely sure")) {
@@ -28,7 +26,6 @@ D
             val clickedItem = event.currentItem ?: return
             if (clickedItem.type == Material.AIR) return
 
-            // منطق منوی اصلی
             if (titleString.contains("SMP Network Portal")) {
                 if (clickedItem.type == Material.GRASS_BLOCK) {
                     plugin.guiManager.openCreationMenu(player)
@@ -37,12 +34,10 @@ D
                     if (event.click.isLeftClick) {
                         if (smpData.status == SMPStatus.ONLINE) {
                             player.sendMessage(mm.deserialize("<green>Connecting you to your SMP instance...</green>"))
-                            // BungeeCord / Velocity plugin channel implementation here to connect
                         } else {
                             player.sendMessage(mm.deserialize("<red>Your server is currently offline or starting!</red>"))
                         }
                     } else if (event.click.isRightClick) {
-                        // باز کردن تنظیمات
                         player.sendMessage(mm.deserialize("<yellow>Opening Server Settings...</yellow>"))
                     }
                 } else if (clickedItem.type == Material.BARRIER) {
@@ -50,7 +45,6 @@ D
                 }
             }
 
-            // منطق منوی تایید حذف
             else if (titleString.contains("Are you absolutely sure")) {
                 if (clickedItem.type == Material.GREEN_WOOL) {
                     plugin.smpManager.deleteRequest(player.uniqueId.toString())
@@ -61,7 +55,6 @@ D
                 }
             }
 
-            // منطق منوی ساخت سرور با چک کردن Vault Economy
             else if (titleString.contains("Customize Your Server")) {
                 if (clickedItem.type == Material.SLIME_BALL) {
                     val econ = plugin.economy
@@ -75,7 +68,6 @@ D
                         econ.withdrawPlayer(player, cost)
                         player.sendMessage(mm.deserialize("<green>5,000 coins deducted successfully!</green>"))
 
-                        // ساخت مدل داده با مشخصات دیفالت یا مقادیر استخراج شده از متا
                         val newSmp = SMPData(
                             ownerUuid = player.uniqueId.toString(),
                             smpId = UUID.randomUUID().toString(),
