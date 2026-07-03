@@ -25,7 +25,8 @@ class DatabaseManager(private val config: HikariConfig) {
         try {
             dataSource.connection.use { conn ->
                 val statement = conn.createStatement()
-                statement.execute("""
+                statement.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS smp_servers (
                         owner_uuid VARCHAR(36) PRIMARY KEY,
                         smp_id VARCHAR(36) NOT NULL,
@@ -38,7 +39,8 @@ class DatabaseManager(private val config: HikariConfig) {
                         hardcore BOOLEAN NOT NULL,
                         world_type VARCHAR(16) NOT NULL
                     );
-                """.trimIndent())
+                """.trimIndent()
+                )
             }
         } catch (e: SQLException) {
             e.printStackTrace()
@@ -78,10 +80,12 @@ class DatabaseManager(private val config: HikariConfig) {
     suspend fun saveSMPData(smpData: SMPData) = withContext(Dispatchers.IO) {
         try {
             dataSource.connection.use { conn ->
-                val ps = conn.prepareStatement("""
+                val ps = conn.prepareStatement(
+                    """
                     REPLACE INTO smp_servers (owner_uuid, smp_id, smp_name, version, max_players, whitelist, status, ip_port, hardcore, world_type)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """.trimIndent())
+                """.trimIndent()
+                )
                 ps.setString(1, smpData.ownerUuid)
                 ps.setString(2, smpData.smpId)
                 ps.setString(3, smpData.smpName)

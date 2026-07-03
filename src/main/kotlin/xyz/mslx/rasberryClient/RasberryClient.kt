@@ -3,8 +3,8 @@ package xyz.mslx.rasberryClient
 import com.zaxxer.hikari.HikariConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancel
 import net.milkbowl.vault.economy.Economy
 import org.bukkit.plugin.java.JavaPlugin
 import xyz.mslx.rasberryClient.Listener.GUIListener
@@ -35,7 +35,9 @@ class RasberryClient : JavaPlugin() {
         }
 
         val dbConfig = HikariConfig().apply {
-            jdbcUrl = "jdbc:mysql://${config.getString("database.host")}:${config.getInt("database.port")}/${config.getString("database.name")}"
+            jdbcUrl = "jdbc:mysql://${config.getString("database.host")}:${config.getInt("database.port")}/${
+                config.getString("database.name")
+            }"
             username = config.getString("database.username")
             password = config.getString("database.password")
             maximumPoolSize = 10

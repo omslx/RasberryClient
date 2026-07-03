@@ -8,11 +8,8 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
-import xyz.mslx.rasberryClient.RasberryClient
-import xyz.mslx.rasberryClient.model.SMPData
 import xyz.mslx.rasberryClient.model.SMPStatus
 import xyz.mslx.rasberryClient.model.WorldType
-import java.util.UUID
 
 class GUIManager(private val plugin: RasberryClient) {
     private val mm = MiniMessage.miniMessage()
@@ -21,7 +18,8 @@ class GUIManager(private val plugin: RasberryClient) {
         plugin.pluginScope.launch {
             val smpData = plugin.smpManager.loadPlayerData(player.uniqueId)
 
-            val inv: Inventory = Bukkit.createInventory(null, 27, mm.deserialize("<bold><gold>SMP Network Portal</gold></bold>"))
+            val inv: Inventory =
+                Bukkit.createInventory(null, 27, mm.deserialize("<bold><gold>SMP Network Portal</gold></bold>"))
 
             val grayGlass = ItemStack(Material.GRAY_STAINED_GLASS_PANE).apply {
                 itemMeta = itemMeta?.apply { displayName(mm.deserialize(" ")) }
@@ -32,15 +30,17 @@ class GUIManager(private val plugin: RasberryClient) {
                 val createItem = ItemStack(Material.GRASS_BLOCK).apply {
                     itemMeta = itemMeta?.apply {
                         displayName(mm.deserialize("<green><bold>Create Your SMP Server</bold></green>"))
-                        lore(listOf(
-                            mm.deserialize("<gray>Start your survival world instantly!</gray>"),
-                            mm.deserialize("<yellow>Cost: 5,000 Coins</yellow>")
-                        ))
+                        lore(
+                            listOf(
+                                mm.deserialize("<gray>Start your survival world instantly!</gray>"),
+                                mm.deserialize("<yellow>Cost: 5,000 Coins</yellow>")
+                            )
+                        )
                     }
                 }
                 inv.setItem(13, createItem)
             } else {
-                val statusMaterial = when(smpData.status) {
+                val statusMaterial = when (smpData.status) {
                     SMPStatus.ONLINE -> Material.EMERALD_BLOCK
                     SMPStatus.STARTING -> Material.GOLD_BLOCK
                     SMPStatus.OFFLINE -> Material.REDSTONE_BLOCK
@@ -49,13 +49,15 @@ class GUIManager(private val plugin: RasberryClient) {
                 val serverCard = ItemStack(statusMaterial).apply {
                     itemMeta = itemMeta?.apply {
                         displayName(mm.deserialize("<aqua><bold>${smpData.smpName}</bold></aqua>"))
-                        lore(listOf(
-                            mm.deserialize("<gray>Version: <yellow>${smpData.serverVersion}</yellow></gray>"),
-                            mm.deserialize("<gray>Status: ${formatStatus(smpData.status)}</gray>"),
-                            mm.deserialize(""),
-                            mm.deserialize("<green>[Left-Click]</green> <white>to Connect</white>"),
-                            mm.deserialize("<yellow>[Right-Click]</yellow> <white>to Server Settings</white>")
-                        ))
+                        lore(
+                            listOf(
+                                mm.deserialize("<gray>Version: <yellow>${smpData.serverVersion}</yellow></gray>"),
+                                mm.deserialize("<gray>Status: ${formatStatus(smpData.status)}</gray>"),
+                                mm.deserialize(""),
+                                mm.deserialize("<green>[Left-Click]</green> <white>to Connect</white>"),
+                                mm.deserialize("<yellow>[Right-Click]</yellow> <white>to Server Settings</white>")
+                            )
+                        )
                     }
                 }
                 inv.setItem(11, serverCard)
@@ -75,7 +77,12 @@ class GUIManager(private val plugin: RasberryClient) {
         }
     }
 
-    fun openCreationMenu(player: Player, selectedVersion: String = "1.21", hardcore: Boolean = false, worldType: WorldType = WorldType.DEFAULT) {
+    fun openCreationMenu(
+        player: Player,
+        selectedVersion: String = "1.21",
+        hardcore: Boolean = false,
+        worldType: WorldType = WorldType.DEFAULT
+    ) {
         val inv = Bukkit.createInventory(null, 36, mm.deserialize("<green>Customize Your Server</green>"))
         val mm = MiniMessage.miniMessage()
 
@@ -91,7 +98,7 @@ class GUIManager(private val plugin: RasberryClient) {
         val hcItem = ItemStack(hcMaterial).apply {
             itemMeta = itemMeta?.apply {
                 displayName(mm.deserialize("<red>Hardcore Mode</red>"))
-                lore(listOf(mm.deserialize("<gray>Status: ${if(hardcore) "<green>Enabled</green>" else "<red>Disabled</red>"}</gray>")))
+                lore(listOf(mm.deserialize("<gray>Status: ${if (hardcore) "<green>Enabled</green>" else "<red>Disabled</red>"}</gray>")))
             }
         }
         inv.setItem(12, hcItem)
@@ -116,15 +123,19 @@ class GUIManager(private val plugin: RasberryClient) {
 
     fun openConfirmationMenu(player: Player) {
         val inv = Bukkit.createInventory(null, 27, mm.deserialize("<red>Are you absolutely sure?</red>"))
-        val yesItem = ItemStack(Material.GREEN_WOOL).apply { itemMeta = itemMeta?.apply { displayName(mm.deserialize("<green>Confirm Delete</green>")) } }
-        val noItem = ItemStack(Material.RED_WOOL).apply { itemMeta = itemMeta?.apply { displayName(mm.deserialize("<red>Cancel</red>")) } }
+        val yesItem = ItemStack(Material.GREEN_WOOL).apply {
+            itemMeta = itemMeta?.apply { displayName(mm.deserialize("<green>Confirm Delete</green>")) }
+        }
+        val noItem = ItemStack(Material.RED_WOOL).apply {
+            itemMeta = itemMeta?.apply { displayName(mm.deserialize("<red>Cancel</red>")) }
+        }
 
         inv.setItem(11, yesItem)
         inv.setItem(15, noItem)
         player.openInventory(inv)
     }
 
-    private fun formatStatus(status: SMPStatus): String = when(status) {
+    private fun formatStatus(status: SMPStatus): String = when (status) {
         SMPStatus.ONLINE -> "<green>ONLINE</green>"
         SMPStatus.OFFLINE -> "<red>OFFLINE</red>"
         SMPStatus.STARTING -> "<yellow>STARTING...</yellow>"

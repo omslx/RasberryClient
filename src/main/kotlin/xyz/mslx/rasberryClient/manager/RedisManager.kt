@@ -3,11 +3,11 @@ package xyz.mslx.rasberryClient.manager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
-import xyz.mslx.rasberryClient.model.SMPPayload
+import kotlinx.serialization.json.Json
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPubSub
+import xyz.mslx.rasberryClient.model.SMPPayload
 
 class RedisManager(private val host: String, private val port: Int, private val scope: CoroutineScope) {
     private val pool = JedisPool(host, port)
