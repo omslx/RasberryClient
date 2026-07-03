@@ -1,0 +1,4 @@
+name: RasberryClient
+version: '1.0-SNAPSHOT'
+main: xyz.mslx.rasberryClient.RasberryClient
+api-version: '1.21'
