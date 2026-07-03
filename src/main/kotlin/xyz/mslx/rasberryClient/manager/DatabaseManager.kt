@@ -12,10 +12,9 @@ import xyz.mslx.rasberryClient.model.WorldType
 import java.sql.SQLException
 
 class DatabaseManager(private val config: HikariConfig) {
-    private val dataSource: HikariDataSource
+    private val dataSource: HikariDataSource = HikariDataSource(config)
 
     init {
-        dataSource = HikariDataSource(config)
 
         CoroutineScope(Dispatchers.IO).launch {
             createTables()
