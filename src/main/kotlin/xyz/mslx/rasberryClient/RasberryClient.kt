@@ -9,6 +9,7 @@ import net.milkbowl.vault.economy.Economy
 import org.bukkit.plugin.java.JavaPlugin
 import xyz.mslx.rasberryClient.Listener.GUIListener
 import xyz.mslx.rasberryClient.manager.DatabaseManager
+import xyz.mslx.rasberryClient.manager.LuminousApi
 import xyz.mslx.rasberryClient.manager.RedisManager
 import xyz.mslx.rasberryClient.manager.SMPManager
 import java.util.concurrent.Executors
@@ -22,6 +23,9 @@ class RasberryClient : JavaPlugin() {
     lateinit var redisManager: RedisManager
     lateinit var smpManager: SMPManager
     lateinit var guiManager: GUIManager
+
+    var luminousApi: LuminousApi? = null
+        private set
 
     var economy: Economy? = null
 
@@ -51,6 +55,16 @@ class RasberryClient : JavaPlugin() {
         val redisHost = config.getString("redis.host", "127.0.0.1")!!
         val redisPort = config.getInt("redis.port", 6379)
         redisManager = RedisManager(redisHost, redisPort, pluginScope)
+
+        val apiBase = config.getString("luminous.api_base", "")?.trim().orEmpty()
+        val orgToken = config.getString("luminous.org_token", "")?.trim().orEmpty()
+        luminousApi = if (apiBase.isNotBlank() && orgToken.isNotBlank()) {
+            logger.info("Luminous panel integration enabled: $apiBase (token: ${orgToken.take(6)}…)")
+            LuminousApi(apiBase.trimEnd('/'), orgToken)
+        } else {
+            logger.warning("luminous.api_base / luminous.org_token not configured — SMP creation falls back to local Redis")
+            null
+        }
 
         smpManager = SMPManager(this)
         guiManager = GUIManager(this)

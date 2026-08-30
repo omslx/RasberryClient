@@ -1,7 +1,7 @@
 plugins {
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.serialization") version "1.9.22"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    kotlin("jvm") version "2.3.21"
+    kotlin("plugin.serialization") version "2.3.21"
+    id("com.gradleup.shadow") version "9.0.2"
 }
 
 group = "xyz.mslx.rasberryClient"
@@ -15,7 +15,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    // 1.21 API برای player.transfer() (api-version '1.21' در paper-plugin.yml)
+    compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
 
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     compileOnly("com.viaversion:viaversion-api:4.9.3")
@@ -27,7 +28,15 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(23)
+    compilerOptions {
+        // Paper 1.21 روی Java 21 اجرا می‌شود؛ بایت‌کد باید 21 بماند
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+    }
+}
+
+tasks.withType<JavaCompile> {
+    options.release.set(21)
 }
 
 tasks {

@@ -32,11 +32,7 @@ class GUIListener(private val plugin: RasberryClient) : Listener {
                 } else if (clickedItem.type == Material.EMERALD_BLOCK || clickedItem.type == Material.REDSTONE_BLOCK || clickedItem.type == Material.GOLD_BLOCK) {
                     val smpData = plugin.smpManager.getCachedData(player.uniqueId) ?: return
                     if (event.click.isLeftClick) {
-                        if (smpData.status == SMPStatus.ONLINE) {
-                            player.sendMessage(mm.deserialize("<green>Connecting you to your SMP instance...</green>"))
-                        } else {
-                            player.sendMessage(mm.deserialize("<red>Your server is currently offline or starting!</red>"))
-                        }
+                        connectToSmp(player, smpData)
                     } else if (event.click.isRightClick) {
                         player.sendMessage(mm.deserialize("<yellow>Opening Server Settings...</yellow>"))
                     }
@@ -85,6 +81,31 @@ class GUIListener(private val plugin: RasberryClient) : Listener {
                     }
                 }
             }
+        }
+    }
+    private fun connectToSmp(player: Player, smpData: SMPData) {
+        if (smpData.status != SMPStatus.ONLINE) {
+            player.sendMessage(mm.deserialize("<red>Your server is currently offline or starting!</red>"))
+            return
+        }
+        val ipPort = smpData.serverIpPort.trim()
+        if (ipPort.isEmpty()) {
+            player.sendMessage(mm.deserialize("<red>Server address is not ready yet — try again in a moment.</red>"))
+            return
+        }
+        val parts = ipPort.split(":")
+        val host = parts.getOrNull(0)
+        val port = parts.getOrNull(1)?.toIntOrNull()
+        if (host.isNullOrBlank() || port == null || port !in 1..65535) {
+            player.sendMessage(mm.deserialize("<yellow>Connect manually: <white>$ipPort</white></yellow>"))
+            return
+        }
+
+        try {
+            player.transfer(host, port)
+        } catch (e: Exception) {
+            plugin.logger.warning("transfer to $ipPort failed for ${player.name}: ${e.message}")
+            player.sendMessage(mm.deserialize("<yellow>Transfer failed — connect manually: <white>$ipPort</white></yellow>"))
         }
     }
 }

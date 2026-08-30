@@ -1,0 +1,21 @@
+# Luminous panel connection (phase 3)
+luminous:
+  # Panel base URL, e.g. "https://panel.luminous.gg" or "http://localhost:8080"
+  api_base: "http://localhost:8080"
+  # The /org/{token} token of the lobby owner (from the panel profile/admin)
+  org_token: ""
+  # How often (in ticks) to poll SMP status after a create request
+  poll_interval_ticks: 60
+
+# Local MySQL cache (DatabaseManager)
+database:
+  host: "127.0.0.1"
+  port: 3306
+  name: "luminous"
+  username: "root"
+  password: ""
+
+# Local Redis (legacy fallback path when org_token is empty)
+redis:
+  host: "127.0.0.1"
+  port: 6379
