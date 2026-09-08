@@ -28,15 +28,14 @@ class RasberryClient : JavaPlugin() {
         private set
 
     var economy: Economy? = null
+    var luminousEconomy: xyz.mslx.rasberryClient.economy.LocalEconomy? = null
 
     override fun onEnable() {
         saveDefaultConfig()
 
-        if (!setupEconomy()) {
-            logger.severe("Vault dependency not found or no economy provider installed! Disabling plugin.")
-            server.pluginManager.disablePlugin(this)
-            return
-        }
+        // Local economy: uses Vault provider if present, otherwise installs LuminousLocal.
+        luminousEconomy = xyz.mslx.rasberryClient.economy.LocalEconomy.install(this)
+        setupEconomy()
 
         val dbConfig = HikariConfig().apply {
             jdbcUrl = "jdbc:mysql://${config.getString("database.host")}:${config.getInt("database.port")}/${
@@ -97,8 +96,8 @@ class RasberryClient : JavaPlugin() {
         logger.info("SMP Lobby Client safely disabled and connections closed.")
     }
 
+    // legacy vault bridging (optional): if a Vault economy got registered, expose it.
     private fun setupEconomy(): Boolean {
-        if (server.pluginManager.getPlugin("Vault") == null) return false
         val rsp = server.servicesManager.getRegistration(Economy::class.java) ?: return false
         economy = rsp.provider
         return economy != null

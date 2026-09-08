@@ -53,9 +53,9 @@ class GUIListener(private val plugin: RasberryClient) : Listener {
 
             else if (titleString.contains("Customize Your Server")) {
                 if (clickedItem.type == Material.SLIME_BALL) {
-                    val econ = plugin.economy
+                    val econ = plugin.luminousEconomy ?: plugin.economy
                     if (econ == null) {
-                        player.sendMessage(mm.deserialize("<red>Economy system not found. Contact administration.</red>"))
+                        player.sendMessage(mm.deserialize("<red>Economy system not ready - try again in a moment.</red>"))
                         return
                     }
 

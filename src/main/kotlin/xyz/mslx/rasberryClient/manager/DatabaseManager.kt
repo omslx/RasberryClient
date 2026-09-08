@@ -27,6 +27,14 @@ class DatabaseManager(private val config: HikariConfig) {
                 val statement = conn.createStatement()
                 statement.execute(
                     """
+                    CREATE TABLE IF NOT EXISTS smp_economy (
+                        uuid VARCHAR(36) PRIMARY KEY,
+                        balance DOUBLE NOT NULL DEFAULT 0
+                    );
+                """.trimIndent()
+                )
+                statement.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS smp_servers (
                         owner_uuid VARCHAR(36) PRIMARY KEY,
                         smp_id VARCHAR(36) NOT NULL,
@@ -119,5 +127,41 @@ class DatabaseManager(private val config: HikariConfig) {
         if (!dataSource.isClosed) {
             dataSource.close()
         }
+    }
+
+    suspend fun saveBalance(uuid: String, balance: Double) = withContext(Dispatchers.IO) {
+        try {
+            dataSource.connection.use { conn ->
+                val ps = conn.prepareStatement(
+                    "INSERT INTO smp_economy (uuid, balance) VALUES (?, ?) ON DUPLICATE KEY UPDATE balance = VALUES(balance)"
+                )
+                ps.setString(1, uuid)
+                ps.setDouble(2, balance)
+                ps.executeUpdate()
+            }
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        }
+    }
+
+    fun loadBalancesAsync(): MutableMap<String, Double> {
+        var out: MutableMap<String, Double> = mutableMapOf()
+        runCatching {
+            out = kotlinx.coroutines.runBlocking { loadBalances() }
+        }
+        return out
+    }
+
+    suspend fun loadBalances(): MutableMap<String, Double> = withContext(Dispatchers.IO) {
+        val out = mutableMapOf<String, Double>()
+        try {
+            dataSource.connection.use { conn ->
+                val rs = conn.createStatement().executeQuery("SELECT uuid, balance FROM smp_economy")
+                while (rs.next()) out[rs.getString("uuid")] = rs.getDouble("balance")
+            }
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        }
+        out
     }
 }
