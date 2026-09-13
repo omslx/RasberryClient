@@ -5,7 +5,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
-import net.milkbowl.vault.economy.Economy
 import org.bukkit.plugin.java.JavaPlugin
 import xyz.mslx.rasberryClient.Listener.GUIListener
 import xyz.mslx.rasberryClient.manager.DatabaseManager
@@ -27,15 +26,13 @@ class RasberryClient : JavaPlugin() {
     var luminousApi: LuminousApi? = null
         private set
 
-    var economy: Economy? = null
     var luminousEconomy: xyz.mslx.rasberryClient.economy.LocalEconomy? = null
 
     override fun onEnable() {
         saveDefaultConfig()
 
-        // Local economy: uses Vault provider if present, otherwise installs LuminousLocal.
+        // Local economy (no Vault needed)
         luminousEconomy = xyz.mslx.rasberryClient.economy.LocalEconomy.install(this)
-        setupEconomy()
 
         val dbConfig = HikariConfig().apply {
             jdbcUrl = "jdbc:mysql://${config.getString("database.host")}:${config.getInt("database.port")}/${
@@ -96,10 +93,4 @@ class RasberryClient : JavaPlugin() {
         logger.info("SMP Lobby Client safely disabled and connections closed.")
     }
 
-    // legacy vault bridging (optional): if a Vault economy got registered, expose it.
-    private fun setupEconomy(): Boolean {
-        val rsp = server.servicesManager.getRegistration(Economy::class.java) ?: return false
-        economy = rsp.provider
-        return economy != null
-    }
 }
